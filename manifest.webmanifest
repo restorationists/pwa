@@ -1,0 +1,22 @@
+{
+  "name": "The Restorationist",
+  "short_name": "The Restorationist",
+  "description": "The Restorationist - A Primary Source For The Englishman's Definitive Case",
+  "lang": "en",
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
