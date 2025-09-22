@@ -42,8 +42,14 @@ self.addEventListener('activate', (event) => {
 // If no response is found, it populates the runtime cache with the response
 // from the network before returning it to the page.
 self.addEventListener('fetch', (event) => {
-  // Skip cross-origin requests, like those for Google Analytics.
-  if (event.request.url.startsWith(self.location.origin) && !(event.request.url.startsWith(`${self.location.origin}/ghost}`))) {
+  // 1) ignore non-GET (prevents hijacking admin saves)
+  if (event.request.method !== 'GET') return;
+
+  // Skip cross-origin requests AND anything under /ghost
+  if (
+    event.request.url.startsWith(self.location.origin) &&
+    !event.request.url.startsWith(self.location.origin + '/ghost') // 2) fixed
+  ) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
@@ -53,19 +59,12 @@ self.addEventListener('fetch', (event) => {
         return caches.open(RUNTIME).then((cache) => {
           return fetch(event.request)
             .then((response) => {
-              // Put a copy of the response in the runtime cache.
-              return cache.put(event.request, response.clone()).then(() => {
-                return response;
-              });
+              return cache.put(event.request, response.clone()).then(() => response);
             })
-            .catch((error) => {
-              // Check if the user is offline first and is trying to navigate to a web page
-              if (cachedResponse) {
-                  return cachedResponse;
-              } else {
-                  // Return offline page if network and cache both fail
-                  return caches.match(OFFLINE_URL);
-              }
+            .catch(() => {
+              // fallback unchanged
+              const cached = cachedResponse;
+              return cached ? cached : caches.match(OFFLINE_URL);
             });
         });
       }),
