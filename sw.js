@@ -43,7 +43,7 @@ self.addEventListener('activate', (event) => {
 // from the network before returning it to the page.
 self.addEventListener('fetch', (event) => {
   // Skip cross-origin requests, like those for Google Analytics.
-  if (event.request.url.startsWith(self.location.origin)) {
+  if (event.request.url.startsWith(self.location.origin) && !(event.request.url.startsWith(`${self.location.origin}/ghost}`))) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
@@ -60,7 +60,12 @@ self.addEventListener('fetch', (event) => {
             })
             .catch((error) => {
               // Check if the user is offline first and is trying to navigate to a web page
-              return caches.match(OFFLINE_URL);
+              if (cachedResponse) {
+                  return cachedResponse;
+              } else {
+                  // Return offline page if network and cache both fail
+                  return caches.match(OFFLINE_URL);
+              }
             });
         });
       }),
